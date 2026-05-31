@@ -10,7 +10,10 @@ class Bola {
     bola_vy;
     bola_radio;
     lanzada;
+    bola_ax;
+    bola_ay;
     estela;
+    
 
     constructor(bola_x, bola_y, bola_vx, bola_vy, bola_radio) {
         this.bola_x = bola_x;
@@ -19,6 +22,8 @@ class Bola {
         this.bola_vy = bola_vy;
         this.bola_radio = bola_radio;
         this.lanzada = false;
+        this.bola_ax = 0;
+        this.bola_ay = 0;
         this.estela = [];
     }
 }
@@ -111,36 +116,36 @@ document.getElementById("visualRadioMassive").addEventListener('input', function
 document.getElementById("massMassive").addEventListener('input', function (e) {
     selectedObject.masaAgujeroNegro = e.target.value;
     document.getElementById("valueMassMassive").textContent = e.target.value;
-});
+})
 
 document.getElementById("gravitationalConstMassive").addEventListener('input', function (e) {
     selectedObject.constGravitacionalUniversal = e.target.value;
     document.getElementById("valueGravitationalConstMassive").textContent = e.target.value;
-});
+})
 
 document.getElementById("deleteBallButton").addEventListener('click', function (e) {
     var index = ballsArr.indexOf(selectedObject);
     ballsArr.splice(index, 1);
     selectedObject = null;
     document.getElementById("ballMenu").style.display = "none";
-});
+})
 
 document.getElementById("deleteMassiveButton").addEventListener('click', function (e) {
     var index = massiveObjArr.indexOf(selectedObject);
     massiveObjArr.splice(index, 1);
     selectedObject = null;
     document.getElementById("massiveMenu").style.display = "none";
-});
+})
 
 document.getElementById("closeBallMenu").addEventListener('click', function(e) {
     document.getElementById("ballMenu").style.display = "none";
     selectedObject = null;
-});
+})
 
 document.getElementById("closeMassiveMenu").addEventListener('click', function(e) {
     document.getElementById("massiveMenu").style.display = "none";
     selectedObject = null;
-});
+})
 
 /////////////////////////////////
 //gameLoop principal, funcion recursiva
@@ -155,12 +160,14 @@ function gameLoop(tiempoActual) {
 
     ctx.clearRect(0, 0, c.width, c.height);
     dibujarGrid();
+    actualizarDebugPanel();
     actualizarFisica(dt);
     dibujarAgujeroNegro();
     dibujarEstela();
     dibujarBola();
     dibujarLineaDireccionLanzamiento();
     dibujarPuntosPredictivos();
+    dibujarVectores();
     ctx.strokeStyle = 'black'
     ctx.lineWidth = 1;
     requestAnimationFrame(gameLoop);
@@ -237,6 +244,56 @@ function dibujarGrid() {
         ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
         ctx.stroke();
     }
+}
+
+function dibujarVectores() {
+
+    var factorVectorVelocidad = 0.3;
+    var factorVectorFuerza = 0.4;
+
+    
+    for (var i = 0; i < ballsArr.length; i++) {
+
+        var anguloVelocidad = Math.atan2(ballsArr[i].bola_vy, ballsArr[i].bola_vx);
+        var anguloFuerza = Math.atan2(ballsArr[i].bola_ay, ballsArr[i].bola_ax);
+        
+        var puntaXVelocidad = ballsArr[i].bola_x + (ballsArr[i].bola_vx * factorVectorVelocidad);
+        var puntaYVelocidad = ballsArr[i].bola_y + (ballsArr[i].bola_vy * factorVectorVelocidad);
+        var puntaXFuerza = ballsArr[i].bola_x + (ballsArr[i].bola_ax * factorVectorFuerza);
+        var puntaYFuerza = ballsArr[i].bola_y + (ballsArr[i].bola_ay * factorVectorFuerza);
+        var tamPunta = 8;
+
+        ctx.beginPath();
+        ctx.moveTo(puntaXVelocidad, puntaYVelocidad);
+        ctx.lineTo(puntaXVelocidad - tamPunta * Math.cos(anguloVelocidad - 0.6), puntaYVelocidad - tamPunta * Math.sin(anguloVelocidad - 0.6));
+        ctx.lineTo(puntaXVelocidad - tamPunta * Math.cos(anguloVelocidad + 0.6), puntaYVelocidad - tamPunta * Math.sin(anguloVelocidad + 0.6));
+        ctx.fillStyle = "red";
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(puntaXFuerza, puntaYFuerza);
+        ctx.lineTo(puntaXFuerza - tamPunta * Math.cos(anguloFuerza - 0.6), puntaYFuerza - tamPunta * Math.sin(anguloFuerza - 0.6));
+        ctx.lineTo(puntaXFuerza - tamPunta * Math.cos(anguloFuerza + 0.6), puntaYFuerza - tamPunta * Math.sin(anguloFuerza + 0.6))
+        ctx.fillStyle = "blue";
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(ballsArr[i].bola_x, ballsArr[i].bola_y);
+        ctx.lineTo(ballsArr[i].bola_x + (ballsArr[i].bola_vx * factorVectorVelocidad), ballsArr[i].bola_y + (ballsArr[i].bola_vy * factorVectorVelocidad));
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(ballsArr[i].bola_x, ballsArr[i].bola_y);
+        ctx.lineTo(ballsArr[i].bola_x + (ballsArr[i].bola_ax * factorVectorFuerza), ballsArr[i].bola_y + (ballsArr[i].bola_ay * factorVectorFuerza));
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
 }
 
 function dibujarEstela() {
@@ -325,8 +382,6 @@ function actualizarFisica(dt) {
     for (var i = 0; i < ballsArr.length; i++) {
         if (ballsArr[i].lanzada) {
 
-            
-
             var ax = 0;
             var ay = 0;
 
@@ -374,6 +429,10 @@ function actualizarFisica(dt) {
             //Se actualiza la posición de la bola en X e Y con la velocidad actual acumulada en cada frame.
             ballsArr[i].bola_x += ballsArr[i].bola_vx * dt;
             ballsArr[i].bola_y += ballsArr[i].bola_vy * dt;
+
+            //Se guarda la aceleracion en X e Y para poder usarlo en el DEBUG.
+            ballsArr[i].bola_ax = ax;
+            ballsArr[i].bola_ay = ay;
 
             ballsArr[i].estela.push({
                 x: ballsArr[i].bola_x,
@@ -552,6 +611,27 @@ function manageRightClick(e) {
             return;
         }
     }
+}
+
+/////////////////////////////////
+//FUNCION EXTRA - DEBUG
+/////////////////////////////////
+
+function actualizarDebugPanel() {
+
+    var texto = "";
+
+    for (var i = 0; i < ballsArr.length; i++) {
+        texto +=
+        `Bola ${i + 1} <br>
+        X: ${Math.round(ballsArr[i].bola_x)} <br>
+        Y: ${Math.round(ballsArr[i].bola_y)} <br>
+        Velocidad X: ${Math.round(ballsArr[i].bola_vx)} <br>
+        Velocidad Y: ${Math.round(ballsArr[i].bola_vy)} <br>
+        ¿Lanzada?: ${ballsArr[i].lanzada} <br>`
+    }
+
+    document.getElementById("debugPanel").innerHTML = texto;
 }
 
 requestAnimationFrame(gameLoop);

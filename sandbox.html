@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horizon Sandbox</title>
     <link rel="stylesheet" href="css/styles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <a href="menu.html">MENÚ</a>
+    <a class="menuButtonSandbox" href="menu.html">MENÚ</a>
 
     <canvas id="myCanvas"></canvas>
 
@@ -19,6 +23,9 @@
     </div>
 
     <div class="propMenu" id="ballMenu">
+
+        <a id="closeBallMenu">X</a>
+
         <label>Radio de la Bola</label>
         <input type="range" min="5" max="50" value="10" id="sliderRadioBall">
         <span id="valorRadioBall">100</span>
@@ -26,6 +33,9 @@
     </div>
 
     <div class="propMenu" id="massiveMenu">
+
+        <a id="closeMassiveMenu">X</a>
+
         <label>Radio visual agujero negro.</label>
         <input type="range" min="20" max="300" value="100" id="visualRadioMassive">
         <span id="valueRadioMassive">100</span>

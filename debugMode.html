@@ -3,9 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Horizon Sandbox Debug</title>
+    <link rel="stylesheet" href="css/styles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    
+
+    <a class="menuButtonSandbox" href="menu.html">MENÚ</a>
+
+    <p id="velocidadP">VELOCIDAD</p>
+    <p id="velocidadF">FUERZA</p>
+
+    <canvas id="myCanvas"></canvas>
+
+    <div id="debugPanel">
+
+    </div>
+
+    <div class="toolBar">
+        <button id="throwButton">Lanzar</button>
+        <button id="addMassiveButton">+ Agujero Negro</button>
+        <button id="addBallButton">+ Bola</button>
+    </div>
+
+    <div class="propMenu" id="ballMenu">
+
+        <a id="closeBallMenu">X</a>
+
+        <label>Radio de la Bola</label>
+        <input type="range" min="5" max="50" value="10" id="sliderRadioBall">
+        <span id="valorRadioBall">100</span>
+        <button id="deleteBallButton">Eliminar</button>
+    </div>
+
+    <div class="propMenu" id="massiveMenu">
+
+        <a id="closeMassiveMenu">X</a>
+
+        <label>Radio visual agujero negro.</label>
+        <input type="range" min="20" max="300" value="100" id="visualRadioMassive">
+        <span id="valueRadioMassive">100</span>
+
+        <label>Masa agujero negro.</label>
+        <input type="range" min="10000" max="200000" value="100000" id="massMassive">
+        <span id="valueMassMassive">100000</span>
+
+        <label>Constante gravitacional</label>
+        <input type="range" min="10" max="500" value="20" id="gravitationalConstMassive">
+        <span id="valueGravitationalConstMassive">100</span>
+
+        <button id="deleteMassiveButton">Eliminar</button>
+    </div>
+
+    <script src="js/debugScript.js"></script>
 </body>
 </html>

@@ -8,6 +8,26 @@ body {
     overflow: hidden;
 }
 
+.menuButtonSandbox {
+    display: flex;
+    position: fixed;
+    color: white;
+    border: 1px solid white;
+    text-align: center;
+    justify-content: center;
+    padding: 10px;
+    font-size: 25px;
+    font-family: Goldman;
+    text-decoration: none;
+    transition: 0.4s;
+    background-color: black;
+}
+
+.menuButtonSandbox:hover {
+    color: red;
+    border: 1px solid red;
+}
+
 .toolBar {
     position: fixed;
     left: 50%;
@@ -58,8 +78,8 @@ body {
 }
 
 .propMenu button {
-    font-size: 12.5;
-    padding: 12px, 24px;
+    font-size: 12.5px;
+    padding: 12px 24px;
     background-color: red;
     color: white;
     border: none;
@@ -72,5 +92,79 @@ input[type="range"] {
     accent-color: red;
 }
 
+#ballMenu a {
+    align-self: flex-start;
+    font-size: 15px;
+    padding: 5px 13px;
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    border-radius: 4px;
+    font-weight: bold;
+    font-family: Goldman;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#ballMenu a:hover {
+    color: red;
+    border: 1px solid red;
+}
+
+#massiveMenu a {
+    align-self: flex-start;
+    font-size: 15px;
+    padding: 5px 13px;
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    border-radius: 4px;
+    font-weight: bold;
+    font-family: Goldman;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#massiveMenu a:hover {
+    color: red;
+    border: 1px solid red;
+}
+
+
+#debugPanel {
+    background-color: black;
+    opacity: 50%;
+    color: white;
+    position: fixed;
+    display: flex;
+    right: 20px;
+    top: 3%;
+    transform: translateY(-3%);
+    padding: 12px 24px;
+    font-family: monospace;
+    min-width: auto;
+}
+
+#velocidadP {
+    position: fixed;
+    font-size: 15px;
+    font-weight: bold;
+    font-family: Goldman;
+    left: 10px;
+    top: 40%;
+    transform: translateY(-40%);
+    color: red;
+}
+
+#velocidadF {
+    position: fixed;
+    font-size: 15px;
+    font-weight: bold;
+    font-family: Goldman;
+    left: 10px;
+    top: 42%;
+    transform: translateY(-42%);
+    color: blue;
+}
 
 
