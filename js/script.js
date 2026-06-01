@@ -2,7 +2,6 @@
 //CLASES
 /////////////////////////////////
 
-
 class Bola {
     bola_x;
     bola_y;
@@ -164,6 +163,7 @@ function gameLoop(tiempoActual) {
     ctx.strokeStyle = 'black'
     ctx.lineWidth = 1;
     requestAnimationFrame(gameLoop);
+    
 }
 
 /////////////////////////////////

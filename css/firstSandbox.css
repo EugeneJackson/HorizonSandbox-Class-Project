@@ -1,0 +1,30 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    background-color: #00568F;
+}
+
+.menuButtonSandbox {
+    display: flex;
+    position: fixed;
+    color: white;
+    border: 1px solid white;
+    text-align: center;
+    justify-content: center;
+    padding: 10px;
+    font-size: 25px;
+    font-family: Goldman;
+    text-decoration: none;
+    transition: 0.4s;
+    background-color: black;
+}
+
+.menuButtonSandbox:hover {
+    color: red;
+    border: 1px solid red;
+}

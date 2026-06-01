@@ -44,7 +44,7 @@ class AgujeroNegro {
 
 
 //Dibujo base del canvas
-var c = document.getElementById("myCanvas");
+var c = document.getElementById("firstSandboxCanvas");
 var ctx = c.getContext("2d");
 //El canvas ocupa el tamaño completo de la ventana.
 c.width = window.innerWidth;
