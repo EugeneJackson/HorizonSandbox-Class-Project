@@ -410,7 +410,7 @@ function actualizarFisica(dt) {
 
 
                 if (d < massiveObjArr[j].radioVisualAgujeroNegro) {
-                    console.log(`Bola ${ballsArr[i]} absorbida`);
+                    console.log(`Bola absorbida`);
                     ballsArr.splice(i, 1);
                     absorbida = true;
                     break;
