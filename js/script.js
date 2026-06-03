@@ -53,35 +53,50 @@ var ctx = c.getContext("2d");
 c.width = window.innerWidth;
 c.height = window.innerHeight;
 
+
+//Posicion inicial del primer agujero negro, se pone en medio de la ventana.
 var x_massive = c.width / 2;
 var y_massive = c.height / 2;
 
 var massiveObjArr = [];
 var ballsArr = [];
 
-
+//Se crea los primeros objetos del agujero negro y la bola iniciales y se meten en la primera posición del array.
 massiveObjArr.push(new AgujeroNegro(100, 100000, 50, x_massive, y_massive, 110));
 ballsArr.push(new Bola(c.width / 4, c.height / 1.3, 0, 0, 10));
 
+/////////////////////////////////
+//VARIABLES GLOBALES
+/////////////////////////////////
+
+//Variables de control para el control del Array.
 var bolaSeleccionada = null;
-var tiempoAnterior = 0;
-var juegoActivo = true;
-var bolaLanzada = false;
 var selectedObject = null;
 var draggedObject = null;
-var isDragging = false;
 
+//Variables booleanas
+var juegoActivo = true;
+var bolaLanzada = false;
+var isDragging = false;
+var isClicked = false;
+
+//Variables numéricas de control, como la posición, posición del click, etc...
+var tiempoAnterior = 0;
+var mouseDownY = 0;
+var mouseDownX = 0;
+var mouseCurrentX = 0;
+var mouseCurrentY = 0;
+var factorLanzamiento = 4;
+
+//Variable String para el control del evento para crear nuevos objetos
 var activeMode = "throw";
+
+//Elementos DOM para el control del evento para crear nuevos objetos.
+
 var throwButton = document.getElementById("throwButton");
 var addMassive = document.getElementById("addMassiveButton")
 var addBall = document.getElementById("addBallButton");
 
-var mouseDownX = 0;
-var mouseDownY = 0;
-var isClicked = false;
-var factorLanzamiento = 4;
-var mouseCurrentX = 0;
-var mouseCurrentY = 0;
 
 
 /////////////////////////////////
@@ -93,30 +108,45 @@ c.addEventListener('mouseup', manageMouseUp);
 c.addEventListener('mousemove', manageMouseMove);
 c.addEventListener('contextmenu', manageRightClick);
 
+//LISTENERS - Eventos de botones de crear nuevos objetos.
+
 throwButton.addEventListener('mousedown', manageThrowButton)
 addMassive.addEventListener('mousedown', manageAddMassiveButton)
 addBall.addEventListener('mousedown', manageAddBallButton)
 
+/////////////////////////////////
+//LAMBDAS - FUNCIONES TEMPORALES
+/////////////////////////////////
+
+
+//Lambda para coger el valor del slider del radio de la bola.
 document.getElementById("sliderRadioBall").addEventListener('input', function (e) {
     selectedObject.bola_radio = e.target.value;
     document.getElementById("valorRadioBall").textContent = e.target.value;
 });
 
+//Lambda pora coger el valor del slider del radio visual del agujero negro.
 document.getElementById("visualRadioMassive").addEventListener('input', function (e) {
     selectedObject.radioVisualAgujeroNegro = e.target.value;
     document.getElementById("valueRadioMassive").textContent = e.target.value;
 });
 
+
+//Lambda para coger el valor del slider de la masa del agujero negro.
 document.getElementById("massMassive").addEventListener('input', function (e) {
     selectedObject.masaAgujeroNegro = e.target.value;
     document.getElementById("valueMassMassive").textContent = e.target.value;
 });
 
+
+//Lambda para coger el valor del slider de la constante gravitacional universal
 document.getElementById("gravitationalConstMassive").addEventListener('input', function (e) {
     selectedObject.constGravitacionalUniversal = e.target.value;
     document.getElementById("valueGravitationalConstMassive").textContent = e.target.value;
 });
 
+
+//Lambda para poder eliminar un objeto ball (Bola)
 document.getElementById("deleteBallButton").addEventListener('click', function (e) {
     var index = ballsArr.indexOf(selectedObject);
     ballsArr.splice(index, 1);
@@ -124,6 +154,7 @@ document.getElementById("deleteBallButton").addEventListener('click', function (
     document.getElementById("ballMenu").style.display = "none";
 });
 
+//Lambda para poder eliminar un objeto masivo (Agujero negro)
 document.getElementById("deleteMassiveButton").addEventListener('click', function (e) {
     var index = massiveObjArr.indexOf(selectedObject);
     massiveObjArr.splice(index, 1);
@@ -131,11 +162,15 @@ document.getElementById("deleteMassiveButton").addEventListener('click', functio
     document.getElementById("massiveMenu").style.display = "none";
 });
 
+
+//Lambda para poder cerrar la ventana de propiedades de la bola seleccionada.
 document.getElementById("closeBallMenu").addEventListener('click', function(e) {
     document.getElementById("ballMenu").style.display = "none";
     selectedObject = null;
 });
 
+
+//Lambda para poder cerrar la ventana de propiedades del agujero negro seleccionado.
 document.getElementById("closeMassiveMenu").addEventListener('click', function(e) {
     document.getElementById("massiveMenu").style.display = "none";
     selectedObject = null;
@@ -148,6 +183,10 @@ document.getElementById("closeMassiveMenu").addEventListener('click', function(e
 
 function gameLoop(tiempoActual) {
 
+
+    //DELTA TIME Δ: Delta time (Δt) es la diferencia de tiempo transcurido entre el frame actual y el frame anterior. Esto normaliza la velocidad para que sea consistente
+    //independientemente del framerate = ((tiempoActual - tiempoAnterior) / 1000 = 0.016s = 60fps, 0.032s = 30fps). Toda multiplicación de fisicas se va a basar
+    //en el Δt asignado por el calculo.
     if (!juegoActivo) return;
     var dt = (tiempoActual - tiempoAnterior) / 1000;
     tiempoAnterior = tiempoActual;
@@ -242,6 +281,10 @@ function dibujarGrid() {
 function dibujarEstela() {
     for(var i = 0; i < ballsArr.length; i++) {
         for(var j = 0; j < ballsArr[i].estela.length; j++) {
+
+            //El radio de la estela es dependiendo de este calculo, el calculo hace que el contador se divida por el length del array y eso lo multiplica por el radio de la bola
+            //Cada iteración hace que j vaya incrementando, esto hace que la bola vaya aumentando.
+
             var radioEstela = (j / ballsArr[i].estela.length) * ballsArr[i].bola_radio;
 
             ctx.fillStyle = "#00FFFF";
@@ -261,18 +304,31 @@ function dibujarPuntosPredictivos() {
 
     if (!isClicked) return;
 
+    //Radio inicial del trazo predictivo
     var radioBolasPredictivas = 4;
 
+    //Valores iniciales
+
+    //simVx/Vy guarda la velocidad antes de lanzar la bola, guarda la posicion en X e Y de donde el usuario a clickado y lo resta con el valor actual de donde esté el ratón en cada frame
+    //Esto guarda la diferencia y hace que las bolas aparezcan al contrario de donde este el ratón. Se multiplica el resultado por el factor de lanzamiento que controla la distancia en el
+    //que llega el trazo predictivo.
     var simVx = (mouseDownX - mouseCurrentX) * factorLanzamiento;
     var simVy = (mouseDownY - mouseCurrentY) * factorLanzamiento;
+
+
+    //simX/Y guarda la posición de la bola seleccionada en X e Y
     var simX = bolaSeleccionada.bola_x;
     var simY = bolaSeleccionada.bola_y;
 
-    for (var i = 0; i < 5; i++) {
+    //1º for: repite el número de veces que aparece la bola predictiva 
+    for (var i = 0; i < 6; i++) {
 
+        //Inicialización de la aceleración.
         var simAx = 0;
         var simAy = 0;
 
+
+        //2º for: calcula la física para cada bola predictiva en cada agujero negro en el Array.
 
         for (var j = 0; j < massiveObjArr.length; j++) {
 
@@ -354,7 +410,7 @@ function actualizarFisica(dt) {
 
 
                 if (d < massiveObjArr[j].radioVisualAgujeroNegro) {
-                    console.log("Juego terminado");
+                    console.log(`Bola ${ballsArr[i]} absorbida`);
                     ballsArr.splice(i, 1);
                     absorbida = true;
                     break;
