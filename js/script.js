@@ -29,6 +29,7 @@ class AgujeroNegro {
     massivePosY;
     massivePosX;
     radioVisualAgujeroNegro;
+    arrayDiscoAcrecion;
 
     constructor(constGravitacionalUniversal, masaAgujeroNegro, cVelocity, massivePosX, massivePosY, radioVisualAgujeroNegro) {
         this.constGravitacionalUniversal = constGravitacionalUniversal;
@@ -38,6 +39,35 @@ class AgujeroNegro {
         this.massivePosY = massivePosY;
         this.radioHorizonte = (2 * this.constGravitacionalUniversal * this.masaAgujeroNegro) / Math.pow(this.cVelocity, 2);
         this.radioVisualAgujeroNegro = radioVisualAgujeroNegro;
+        this.arrayDiscoAcrecion = [];
+
+        for(var i = 0; i < 500; i++) {
+
+            var distancia = this.radioVisualAgujeroNegro + Math.random() * this.radioVisualAgujeroNegro;
+
+            this.arrayDiscoAcrecion.push(new ParticulaDiscoAcrecion(Math.random() * (2 * Math.PI),
+                                                                    this.radioVisualAgujeroNegro + Math.random() * this.radioVisualAgujeroNegro,
+                                                                    1 / distancia * 60,
+                                                                    Math.random() * 2 + 1,
+                                                                    "orange"));
+        }
+
+    }
+}
+
+class ParticulaDiscoAcrecion {
+    angulo;
+    distancia;
+    velocidadAngular;
+    radio;
+    color;
+
+    constructor(angulo, distancia, velocidadAngular, radio, color) {
+        this.angulo = angulo;
+        this.distancia = distancia;
+        this.velocidadAngular = velocidadAngular;
+        this.radio = radio;
+        this.color = color;
     }
 }
 
@@ -194,11 +224,15 @@ function gameLoop(tiempoActual) {
     ctx.clearRect(0, 0, c.width, c.height);
     dibujarGrid();
     actualizarFisica(dt);
+    dibujarDiscoDeAcrecionDetras();
+    actualizarDiscoAcrecion(dt);
     dibujarAgujeroNegro();
+    dibujarDiscoDeAcrecionDelante();
     dibujarEstela();
     dibujarBola();
     dibujarLineaDireccionLanzamiento();
     dibujarPuntosPredictivos();
+    
     ctx.strokeStyle = 'black'
     ctx.lineWidth = 1;
     requestAnimationFrame(gameLoop);
@@ -232,7 +266,19 @@ function dibujarAgujeroNegro() {
 function dibujarBola() {
 
     for (var i = 0; i < ballsArr.length; i++) {
-        ctx.fillStyle = '#00FFFF';
+
+        for(var j = 0; j < massiveObjArr.length; j++) {
+
+            var dx = massiveObjArr[j].massivePosX - ballsArr[i].bola_x;
+            var dy = massiveObjArr[j].massivePosY - ballsArr[i].bola_y;
+            var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+            var t = d / (massiveObjArr[j].radioVisualAgujeroNegro * 5)
+            t = Math.min(t, 1)
+
+        }
+
+        ctx.fillStyle = `rgba()`;
         ctx.beginPath();
 
         ctx.arc(ballsArr[i].bola_x, ballsArr[i].bola_y, ballsArr[i].bola_radio, 0, 2 * Math.PI);
@@ -286,14 +332,61 @@ function dibujarEstela() {
             //Cada iteración hace que j vaya incrementando, esto hace que la bola vaya aumentando.
 
             var radioEstela = (j / ballsArr[i].estela.length) * ballsArr[i].bola_radio;
+            var t = (j / ballsArr[i].estela.length);
 
-            ctx.fillStyle = "#00FFFF";
+            ctx.fillStyle = `rgba(${255 * (1-t)}, 255, 255, ${t})`;
             ctx.beginPath();
             ctx.arc(ballsArr[i].estela[j].x, ballsArr[i].estela[j].y, radioEstela, 0, 2 * Math.PI);
             ctx.fill();
         }
 
     }
+}
+
+function dibujarDiscoDeAcrecionDetras() {
+
+    for(var i = 0; i < massiveObjArr.length; i++) {
+
+        for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+
+            var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
+            var t = (distanciaParticulasDiscoAcrecion - massiveObjArr[i].radioVisualAgujeroNegro) / massiveObjArr[i].radioVisualAgujeroNegro;
+
+            var accretionDiskX = massiveObjArr[i].massivePosX + distanciaParticulasDiscoAcrecion * Math.cos(massiveObjArr[i].arrayDiscoAcrecion[j].angulo);
+            var accretionDiskY = massiveObjArr[i].massivePosY + (distanciaParticulasDiscoAcrecion * Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) * 0.4);
+
+            if(Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) > 0) continue;
+
+            ctx.fillStyle = `rgba(255, ${200 - Math.round(165 * t)}, 0, 1)`;
+            ctx.beginPath();
+            ctx.arc(accretionDiskX, accretionDiskY, massiveObjArr[i].arrayDiscoAcrecion[j].radio, 0,  2 * Math.PI);
+            ctx.fill();
+        }
+    }
+}
+
+
+function dibujarDiscoDeAcrecionDelante() {
+
+    for(var i = 0; i < massiveObjArr.length; i++) {
+
+        for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+
+            var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
+            var t = (distanciaParticulasDiscoAcrecion - massiveObjArr[i].radioVisualAgujeroNegro) / massiveObjArr[i].radioVisualAgujeroNegro;
+
+            var accretionDiskX = massiveObjArr[i].massivePosX + distanciaParticulasDiscoAcrecion * Math.cos(massiveObjArr[i].arrayDiscoAcrecion[j].angulo);
+            var accretionDiskY = massiveObjArr[i].massivePosY + (distanciaParticulasDiscoAcrecion * Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) * 0.4);
+
+            if(Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) < 0) continue;
+
+            ctx.fillStyle = `rgba(255, ${200 - Math.round(180 * t)}, 0, 1)`;
+            ctx.beginPath();
+            ctx.arc(accretionDiskX, accretionDiskY, massiveObjArr[i].arrayDiscoAcrecion[j].radio * 1.2, 0,  2 * Math.PI);
+            ctx.fill();
+        }
+    }
+
 }
 
 /////////////////////////////////
@@ -439,6 +532,18 @@ function actualizarFisica(dt) {
             if (ballsArr[i].estela.length > 20) {
                 ballsArr[i].estela.shift();
             }
+        }
+    }
+}
+
+///////////////////////////////////
+//FUNCION FISICA DISCO DE ACRECIÓN
+///////////////////////////////////
+
+function actualizarDiscoAcrecion(dt) {
+    for(var i = 0; i < massiveObjArr.length; i++) {
+        for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+            massiveObjArr[i].arrayDiscoAcrecion[j].angulo += massiveObjArr[i].arrayDiscoAcrecion[j].velocidadAngular * dt;
         }
     }
 }

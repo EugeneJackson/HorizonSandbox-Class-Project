@@ -35,6 +35,7 @@ class AgujeroNegro {
     massivePosY;
     massivePosX;
     radioVisualAgujeroNegro;
+    arrayDiscoAcrecion;
 
     constructor(constGravitacionalUniversal, masaAgujeroNegro, cVelocity, massivePosX, massivePosY, radioVisualAgujeroNegro) {
         this.constGravitacionalUniversal = constGravitacionalUniversal;
@@ -44,6 +45,35 @@ class AgujeroNegro {
         this.massivePosY = massivePosY;
         this.radioHorizonte = (2 * this.constGravitacionalUniversal * this.masaAgujeroNegro) / Math.pow(this.cVelocity, 2);
         this.radioVisualAgujeroNegro = radioVisualAgujeroNegro;
+        this.arrayDiscoAcrecion = [];
+
+        for(var i = 0; i < 500; i++) {
+
+            var distancia = this.radioVisualAgujeroNegro + Math.random() * this.radioVisualAgujeroNegro;
+
+            this.arrayDiscoAcrecion.push(new ParticulaDiscoAcrecion(Math.random() * (2 * Math.PI),
+                                                                    this.radioVisualAgujeroNegro + Math.random() * this.radioVisualAgujeroNegro,
+                                                                    1 / distancia * 60,
+                                                                    Math.random() * 2 + 1,
+                                                                    "orange"));
+        }
+
+    }
+}
+
+class ParticulaDiscoAcrecion {
+    angulo;
+    distancia;
+    velocidadAngular;
+    radio;
+    color;
+
+    constructor(angulo, distancia, velocidadAngular, radio, color) {
+        this.angulo = angulo;
+        this.distancia = distancia;
+        this.velocidadAngular = velocidadAngular;
+        this.radio = radio;
+        this.color = color;
     }
 }
 
@@ -154,6 +184,10 @@ document.getElementById("closeMassiveMenu").addEventListener('click', function(e
 
 function gameLoop(tiempoActual) {
 
+
+    //DELTA TIME Δ: Delta time (Δt) es la diferencia de tiempo transcurido entre el frame actual y el frame anterior. Esto normaliza la velocidad para que sea consistente
+    //independientemente del framerate = ((tiempoActual - tiempoAnterior) / 1000 = 0.016s = 60fps, 0.032s = 30fps). Toda multiplicación de fisicas se va a basar
+    //en el Δt asignado por el calculo.
     if (!juegoActivo) return;
     var dt = (tiempoActual - tiempoAnterior) / 1000;
     tiempoAnterior = tiempoActual;
@@ -162,15 +196,20 @@ function gameLoop(tiempoActual) {
     dibujarGrid();
     actualizarDebugPanel();
     actualizarFisica(dt);
+    dibujarDiscoDeAcrecionDetras();
+    actualizarDiscoAcrecion(dt);
     dibujarAgujeroNegro();
+    dibujarDiscoDeAcrecionDelante();
     dibujarEstela();
     dibujarBola();
     dibujarLineaDireccionLanzamiento();
     dibujarPuntosPredictivos();
-    dibujarVectores();
+     dibujarVectores();
+    
     ctx.strokeStyle = 'black'
     ctx.lineWidth = 1;
     requestAnimationFrame(gameLoop);
+    
 }
 
 /////////////////////////////////
@@ -310,6 +349,52 @@ function dibujarEstela() {
     }
 }
 
+function dibujarDiscoDeAcrecionDetras() {
+
+    for(var i = 0; i < massiveObjArr.length; i++) {
+
+        for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+
+            var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
+            var t = (distanciaParticulasDiscoAcrecion - massiveObjArr[i].radioVisualAgujeroNegro) / massiveObjArr[i].radioVisualAgujeroNegro;
+
+            var accretionDiskX = massiveObjArr[i].massivePosX + distanciaParticulasDiscoAcrecion * Math.cos(massiveObjArr[i].arrayDiscoAcrecion[j].angulo);
+            var accretionDiskY = massiveObjArr[i].massivePosY + (distanciaParticulasDiscoAcrecion * Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) * 0.4);
+
+            if(Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) > 0) continue;
+
+            ctx.fillStyle = `rgba(255, ${200 - Math.round(165 * t)}, 0, 1)`;
+            ctx.beginPath();
+            ctx.arc(accretionDiskX, accretionDiskY, massiveObjArr[i].arrayDiscoAcrecion[j].radio, 0,  2 * Math.PI);
+            ctx.fill();
+        }
+    }
+}
+
+
+function dibujarDiscoDeAcrecionDelante() {
+
+    for(var i = 0; i < massiveObjArr.length; i++) {
+
+        for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+
+            var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
+            var t = (distanciaParticulasDiscoAcrecion - massiveObjArr[i].radioVisualAgujeroNegro) / massiveObjArr[i].radioVisualAgujeroNegro;
+
+            var accretionDiskX = massiveObjArr[i].massivePosX + distanciaParticulasDiscoAcrecion * Math.cos(massiveObjArr[i].arrayDiscoAcrecion[j].angulo);
+            var accretionDiskY = massiveObjArr[i].massivePosY + (distanciaParticulasDiscoAcrecion * Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) * 0.4);
+
+            if(Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) < 0) continue;
+
+            ctx.fillStyle = `rgba(255, ${200 - Math.round(180 * t)}, 0, 1)`;
+            ctx.beginPath();
+            ctx.arc(accretionDiskX, accretionDiskY, massiveObjArr[i].arrayDiscoAcrecion[j].radio * 1.2, 0,  2 * Math.PI);
+            ctx.fill();
+        }
+    }
+
+}
+
 /////////////////////////////////
 //FUNCION DE DIBUJO + FISICA
 /////////////////////////////////
@@ -442,6 +527,18 @@ function actualizarFisica(dt) {
             if (ballsArr[i].estela.length > 20) {
                 ballsArr[i].estela.shift();
             }
+        }
+    }
+}
+
+///////////////////////////////////
+//FUNCION FISICA DISCO DE ACRECIÓN
+///////////////////////////////////
+
+function actualizarDiscoAcrecion(dt) {
+    for(var i = 0; i < massiveObjArr.length; i++) {
+        for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+            massiveObjArr[i].arrayDiscoAcrecion[j].angulo += massiveObjArr[i].arrayDiscoAcrecion[j].velocidadAngular * dt;
         }
     }
 }
