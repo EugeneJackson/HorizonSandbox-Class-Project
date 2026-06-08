@@ -41,6 +41,9 @@ class AgujeroNegro {
         this.radioVisualAgujeroNegro = radioVisualAgujeroNegro;
         this.arrayDiscoAcrecion = [];
 
+        ////////////////////////////////////////
+        //Constructor para el disco de acreción
+        ////////////////////////////////////////
         for(var i = 0; i < 500; i++) {
 
             var distancia = this.radioVisualAgujeroNegro + Math.random() * this.radioVisualAgujeroNegro;
@@ -155,9 +158,22 @@ document.getElementById("sliderRadioBall").addEventListener('input', function (e
     document.getElementById("valorRadioBall").textContent = e.target.value;
 });
 
-//Lambda pora coger el valor del slider del radio visual del agujero negro.
+//Lambda pora coger el valor del slider del radio visual del agujero negro y actualizar el disco de acreción.
 document.getElementById("visualRadioMassive").addEventListener('input', function (e) {
-    selectedObject.radioVisualAgujeroNegro = e.target.value;
+    selectedObject.radioVisualAgujeroNegro = Number(e.target.value);
+    selectedObject.arrayDiscoAcrecion = [];
+
+    for(var i = 0; i < 500; i++) {
+
+            var distancia = selectedObject.radioVisualAgujeroNegro + Math.random() * selectedObject.radioVisualAgujeroNegro;
+
+            selectedObject.arrayDiscoAcrecion.push(new ParticulaDiscoAcrecion(Math.random() * (2 * Math.PI),
+                                                                    selectedObject.radioVisualAgujeroNegro + Math.random() * selectedObject.radioVisualAgujeroNegro,
+                                                                    1 / distancia * 60,
+                                                                    Math.random() * 2 + 1,
+                                                                    "orange"));
+        }
+
     document.getElementById("valueRadioMassive").textContent = e.target.value;
 });
 
@@ -265,20 +281,38 @@ function dibujarAgujeroNegro() {
 
 function dibujarBola() {
 
+    //Se aplica a cada bola del canvas.
     for (var i = 0; i < ballsArr.length; i++) {
 
+        //Inicializamos tMin en 1 (significa que, por defecto, está lejos de todo)
+        var tMin = 1;
+
+        //Se aplica a cada agujero negro del canvas.
         for(var j = 0; j < massiveObjArr.length; j++) {
 
+            //Diferencia de posición en X e Y entre la bola y el agujero negro más cercano.
             var dx = massiveObjArr[j].massivePosX - ballsArr[i].bola_x;
             var dy = massiveObjArr[j].massivePosY - ballsArr[i].bola_y;
+
+            //Distancia real entre la bola y el agujero negro (Pitágoras).
             var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
-            var t = d / (massiveObjArr[j].radioVisualAgujeroNegro * 5)
-            t = Math.min(t, 1)
+            //tActual calcula la cercanía a ESTE agujero negro específico (entre 0 y 1)
+            var tActual = d / (massiveObjArr[j].radioVisualAgujeroNegro * 3);
+            tActual = Math.min(tActual, 1);
 
+            //Si este agujero negro está más cerca que el que habíamos evaluado antes,
+            //actualizamos tMin con el valor más peligroso/cercano.
+            if (tActual < tMin) {
+                tMin = tActual;
+            }
         }
 
-        ctx.fillStyle = `rgba()`;
+        //Una vez que el bucle 'j' ha terminado, ya sabemos con certeza cuál es el 
+        //agujero negro más cercano. Ahora sí, aplicamos el exponente de agresividad.
+        var tFinal = Math.pow(tMin, 5);
+
+        ctx.fillStyle = `rgba(${Math.round(255 * (1 - tFinal))}, ${Math.round(255 * tFinal)}, ${Math.round(255 * tFinal)}, 1)`;
         ctx.beginPath();
 
         ctx.arc(ballsArr[i].bola_x, ballsArr[i].bola_y, ballsArr[i].bola_radio, 0, 2 * Math.PI);
@@ -306,6 +340,9 @@ function dibujarLineaDireccionLanzamiento() {
 
 
 function dibujarGrid() {
+
+    //Recorre el width entero y va añadiendo 50, esto se hace para dibujar las lineas horizontales
+
     for(var i = 0; i < c.width; i += 50) {
 
         ctx.beginPath();
@@ -315,6 +352,7 @@ function dibujarGrid() {
         ctx.stroke();
     }
 
+    //Recorre el height entero y va añadiendo 50, esto se hace para dibujar las lineas verticales, dando en un grid.
     for(var i = 0; i < c.height; i += 50) {
         ctx.beginPath();
         ctx.moveTo(0, i);
@@ -325,6 +363,9 @@ function dibujarGrid() {
 }
 
 function dibujarEstela() {
+
+    //Creación de estela visual en la bola.
+
     for(var i = 0; i < ballsArr.length; i++) {
         for(var j = 0; j < ballsArr[i].estela.length; j++) {
 
@@ -343,15 +384,24 @@ function dibujarEstela() {
     }
 }
 
+/////////////////////////////////
+//Funciones Disco de Acreción
+/////////////////////////////////
+//Estas dos funciones hacen el disco de acreción entero, para que no quede el disco "dentro" del agujero negro, se hacen 2 funciones, una que dibuje el disco de acreción por detrás y otra
+//que dibuje el disco de acreción por delante.
+
 function dibujarDiscoDeAcrecionDetras() {
 
+    //Se aplica a cada agujero negro.
     for(var i = 0; i < massiveObjArr.length; i++) {
 
+        //Se recorre cada array de cada agujero negro del disco de acreción y se hace la logica.
         for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
 
             var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
             var t = (distanciaParticulasDiscoAcrecion - massiveObjArr[i].radioVisualAgujeroNegro) / massiveObjArr[i].radioVisualAgujeroNegro;
 
+            //Posición en X e Y del disco de acreción.
             var accretionDiskX = massiveObjArr[i].massivePosX + distanciaParticulasDiscoAcrecion * Math.cos(massiveObjArr[i].arrayDiscoAcrecion[j].angulo);
             var accretionDiskY = massiveObjArr[i].massivePosY + (distanciaParticulasDiscoAcrecion * Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) * 0.4);
 
@@ -368,8 +418,10 @@ function dibujarDiscoDeAcrecionDetras() {
 
 function dibujarDiscoDeAcrecionDelante() {
 
+    //Se aplica a cada agujero negro.
     for(var i = 0; i < massiveObjArr.length; i++) {
 
+        //Se recorre cada array de cada agujero negro del disco de acreción y se hace la logica.
         for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
 
             var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
@@ -543,6 +595,10 @@ function actualizarFisica(dt) {
 function actualizarDiscoAcrecion(dt) {
     for(var i = 0; i < massiveObjArr.length; i++) {
         for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+
+            //Tercera ley de Kepler: angulo += suma el angulo actual | velocidadAngular * dt la velocidad angular multiplicada por el delta time. Cada frame
+            //la particula avanza un poco en su órbita, cuanto más lejos del horizonte de eventos, más lento va a ir, igual que los planetas orbitando sobre el Sol, los planetas
+            //más lejanos tardan mas en dar una vuelta al sol.
             massiveObjArr[i].arrayDiscoAcrecion[j].angulo += massiveObjArr[i].arrayDiscoAcrecion[j].velocidadAngular * dt;
         }
     }
@@ -556,32 +612,45 @@ function manageMouseDown(e) {
 
     if (e.button !== 0) return;
 
+    //Guarda en X e Y la posición actual del ratón.
     mouseDownX = e.clientX;
     mouseDownY = e.clientY;
 
     switch (activeMode) {
+
+        //throw se encarga del poder lanzar la bola donde quieras.
         case "throw":
 
             for (var i = 0; i < ballsArr.length; i++) {
 
+                //Se calcula la distancia en X e Y de la bola seleccionada.
                 dx = mouseDownX - ballsArr[i].bola_x;
                 dy = mouseDownY - ballsArr[i].bola_y;
 
+                //Usando pitágoras calculamos la distancia real.
                 d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
+                //Usando el radio de la bola (Algo mas grande para comodidad del usuario) se hace la logica de tirar la bola.
                 if (d < ballsArr[i].bola_radio * 4) {
+
+                    //Pasamos el flag a true
                     isClicked = true;
+                    //Seleccionamos la bola del array que hemos elegido.
                     bolaSeleccionada = ballsArr[i];
 
+                    //Paramos completamente la bola para que pueda ser lanzada de nuevo.
                     bolaSeleccionada.bola_vx = 0;
                     bolaSeleccionada.bola_vy = 0;
 
+                    //Quitamos el flag de la bola seleccionada.
                     bolaSeleccionada.lanzada = false;
 
+                    //Quitamos el flag universal.
                     bolaLanzada = false;
                 }
             }
 
+            //Logica para arrastrar el agujero negro.
             for (var j = 0; j < massiveObjArr.length; j++) {
                 dx = mouseDownX - massiveObjArr[j].massivePosX;
                 dy = mouseDownY - massiveObjArr[j].massivePosY;
@@ -595,21 +664,32 @@ function manageMouseDown(e) {
             }
 
             break;
+        //Lógica para crear un nuevo agujero negro.    
         case "addMassive":
+            //DEBUG EN CONSOLA
             console.log("Creando Massive");
-            massiveObjArr.push(new AgujeroNegro(100, 500000, 50, mouseDownX, mouseDownY, 110))
+            //Metemos en el array de massiveObj un nuevo agujero negro con unas propiedades base.
+            massiveObjArr.push(new AgujeroNegro(100, 100000, 50, mouseDownX, mouseDownY, 110))
+            //Actualizamos automáticamente el activeMode para que sea throw y se pueda lanzar la bola directamente sin tener que clickar un botón.
             activeMode = "throw";
             break;
+        //Lógica para crear una nueva bola.
         case "addBall":
+            //DEBUG EN CONSOLA
             console.log("Creando bola");
+            //Metemos en el array de balls una nueva bola con unas propiedades base.
             ballsArr.push(new Bola(mouseDownX, mouseDownY, 0, 0, 10))
+            //Actualizamos automáticamente el activeMode para que sea throw y se pueda lanzar la bola directamente sin tener que clickar un botón.
             activeMode = "throw";
             break;
     }
 }
 
+//Funcion para el mouseUp
 function manageMouseUp(e) {
 
+
+    //Si el flag de arrastrar es true, se pone en false, y el draggedObject pasa a null.
     if (isDragging) {
         isDragging = false;
         draggedObject = null;
@@ -618,24 +698,24 @@ function manageMouseUp(e) {
     if (bolaLanzada) return;
     if (!isClicked) return;
     
-
-
+    //Aqui se aplica la velocidad del lanzamiento al soltar el click
     bolaSeleccionada.bola_vx = (mouseDownX - e.clientX) * factorLanzamiento;
     bolaSeleccionada.bola_vy = (mouseDownY - e.clientY) * factorLanzamiento;
 
+    //Se actualizan los flags, isClicked se pasa a false, bolaLanzada pasa a true y la bola seleccionada pasa a lanzada = true;
     isClicked = false;
     bolaLanzada = true;
     bolaSeleccionada.lanzada = true;
-
-
-
 }
 
+//Funcion del MouseMove, gestiona el movimiento del ratón.
 function manageMouseMove(e) {
 
+    //Actualiza la posicion actual de la posicion X e Y.
     mouseCurrentX = e.clientX;
     mouseCurrentY = e.clientY;
 
+    //Si el flag es True el agujero negro se actualiza cada frame a la posicion actual del raton en X e Y.
     if (isDragging) {
         draggedObject.massivePosX = mouseCurrentX;
         draggedObject.massivePosY = mouseCurrentY;
@@ -643,19 +723,19 @@ function manageMouseMove(e) {
 
 }
 
+/////////////////////////////////
+//BOTONES activeMode
+/////////////////////////////////
 
+//e.stopPropagation() hace que el click no pueda interactuar con los objetos que hayan detrás de este.
 function manageThrowButton(e) {
-
     activeMode = "throw";
     e.stopPropagation();
-
 }
 
 function manageAddMassiveButton(e) {
-
     activeMode = "addMassive";
     e.stopPropagation();
-
 }
 
 function manageAddBallButton(e) {
@@ -665,19 +745,30 @@ function manageAddBallButton(e) {
 
 }
 
+/////////////////////////////////
+//FUNCION RIGHTCLICK
+/////////////////////////////////
+
 function manageRightClick(e) {
 
+    //Guardamos la posición del clickDerecho en X e Y.
     mouseDownX = e.clientX;
     mouseDownY = e.clientY;
 
+    //Quitamos el click derecho del navegador predeterminado.
     e.preventDefault();
 
+
+    //Recorremos el array de balls
     for (var i = 0; i < ballsArr.length; i++) {
+
+        //Calcula la distancia entre donde se hizo click y el centro de cada bola con Pitágoras. 
         dx = mouseDownX - ballsArr[i].bola_x;
         dy = mouseDownY - ballsArr[i].bola_y;
 
         d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
+        //Si click fue dentro de la bola (distancia menor al radio * 4) selecciona esa bola para que muestre el valor correcto.
         if (d < ballsArr[i].bola_radio * 4) {
             selectedObject = ballsArr[i];
             document.getElementById("ballMenu").style.display = "flex";
@@ -690,12 +781,16 @@ function manageRightClick(e) {
         }
     }
 
+    //Recorremos el array de massiveObj
     for (var j = 0; j < massiveObjArr.length; j++) {
+
+        //Calcula la distancia entre donde se hizo click y el centro de cada bola con Pitágoras. 
         dx = mouseDownX - massiveObjArr[j].massivePosX;
         dy = mouseDownY - massiveObjArr[j].massivePosY;
 
         d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
+        //Si click fue dentro del agujero negro selecciona ese agujero negro para que muestre el valor correcto.
         if (d < massiveObjArr[j].radioVisualAgujeroNegro) {
             selectedObject = massiveObjArr[j];
             document.getElementById("ballMenu").style.display = "none";

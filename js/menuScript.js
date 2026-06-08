@@ -28,23 +28,27 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+//Funcion para dibujar las estrellas moviendose en el Menu.
 function dibujarEstrellas() {
     
+    //recorremos el array de estrellas (starsArr) y pintamos cada estrella con el constructor que hicimos anteriormente.
     for(var i = 0; i < starsArr.length; i++) {
         ctx.fillStyle = "white";
         ctx.beginPath();
 
         ctx.arc(starsArr[i].x, starsArr[i].y, starsArr[i].radio, 0, 2 * Math.PI);
         ctx.fill();
-        ctx.stroke();
 
-        starsArr[i].x += estrella.vx;
-        starsArr[i].y += estrella.vy;
+        //Actualizamos cada frame la posicion x e y con la velocidad de x e y que hicimos en el constructor anteriormente.
+        starsArr[i].x += starsArr[i].vx;
+        starsArr[i].y += starsArr[i].vy;
 
+        //Si las estrellas llegan al final de c.width se vuelven a pintar en la posicion 0 de x.
         if(starsArr[i].x > c.width) {
             starsArr[i].x = 0;
         }
 
+        //Si las estrellas llegan al final de c.height se vuelven a pintar en la posicion 0 de y.
         if(starsArr[i].y > c.height) {
             starsArr[i].y = 0;
         }

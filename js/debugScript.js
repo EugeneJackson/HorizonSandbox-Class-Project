@@ -47,6 +47,9 @@ class AgujeroNegro {
         this.radioVisualAgujeroNegro = radioVisualAgujeroNegro;
         this.arrayDiscoAcrecion = [];
 
+        ////////////////////////////////////////
+        //Constructor para el disco de acreción
+        ////////////////////////////////////////
         for(var i = 0; i < 500; i++) {
 
             var distancia = this.radioVisualAgujeroNegro + Math.random() * this.radioVisualAgujeroNegro;
@@ -96,28 +99,34 @@ var massiveObjArr = [];
 var ballsArr = [];
 
 
+//Se crea los primeros objetos del agujero negro y la bola iniciales y se meten en la primera posición del array.
 massiveObjArr.push(new AgujeroNegro(100, 100000, 50, x_massive, y_massive, 110));
 ballsArr.push(new Bola(c.width / 4, c.height / 1.3, 0, 0, 10));
 
-var bolaSeleccionada = null;
-var tiempoAnterior = 0;
+//Variables booleanas
 var juegoActivo = true;
 var bolaLanzada = false;
+var isDragging = false;
+var isClicked = false;
+
+//Variables numéricas de control, como la posición, posición del click, etc...
+var tiempoAnterior = 0;
+var mouseDownX = 0;
+var mouseDownY = 0;
+var mouseCurrentX = 0;
+var mouseCurrentY = 0;
+var factorLanzamiento = 4;
+
+//Variables de control para el control del Array.
+var bolaSeleccionada = null;
 var selectedObject = null;
 var draggedObject = null;
-var isDragging = false;
 
 var activeMode = "throw";
 var throwButton = document.getElementById("throwButton");
 var addMassive = document.getElementById("addMassiveButton")
 var addBall = document.getElementById("addBallButton");
 
-var mouseDownX = 0;
-var mouseDownY = 0;
-var isClicked = false;
-var factorLanzamiento = 4;
-var mouseCurrentX = 0;
-var mouseCurrentY = 0;
 
 
 /////////////////////////////////
@@ -287,21 +296,31 @@ function dibujarGrid() {
 
 function dibujarVectores() {
 
+    //Variables de control para escalar el tamaño de los vectores. Nos permiten "exagerar" o reducir visualmente
+    //las flechas en el modo debug para que no se salgan de la pantalla ni sean invisibles.
     var factorVectorVelocidad = 0.3;
     var factorVectorFuerza = 0.4;
 
-    
+    //Recorremos el array de balls para que los vectores se apliquen a todas las bolas.
     for (var i = 0; i < ballsArr.length; i++) {
 
+        //Calculamos el ángulo exacto de la trayectoria utilizando la arcotangente (atan2) de las velocidades y aceleraciones.
+        //Esto nos da los radianes necesarios para saber hacia dónde debe rotar la flecha.
         var anguloVelocidad = Math.atan2(ballsArr[i].bola_vy, ballsArr[i].bola_vx);
         var anguloFuerza = Math.atan2(ballsArr[i].bola_ay, ballsArr[i].bola_ax);
-        
+
+        //Proyectamos las coordenadas (X, Y) donde terminará la punta de cada vector.
+        //Sumamos a la posición actual de la bola su velocidad/aceleración multiplicada por el factor de escala visual.
         var puntaXVelocidad = ballsArr[i].bola_x + (ballsArr[i].bola_vx * factorVectorVelocidad);
         var puntaYVelocidad = ballsArr[i].bola_y + (ballsArr[i].bola_vy * factorVectorVelocidad);
         var puntaXFuerza = ballsArr[i].bola_x + (ballsArr[i].bola_ax * factorVectorFuerza);
         var puntaYFuerza = ballsArr[i].bola_y + (ballsArr[i].bola_ay * factorVectorFuerza);
         var tamPunta = 8;
 
+        //Dibujamos las puntas de las flechas (los triángulos). Para abrir los vértices hacia atrás, restamos y sumamos 0.6
+        //radianes al ángulo original del vector aplicando senos y cosenos para calcular las coordenadas exactas de las esquinas.
+        //Trazamos el cuerpo principal de los vectores: una línea recta que nace exactamente en las coordenadas (X, Y) del centro de la bola
+        //y muere en las coordenadas de la punta que calculamos al principio.
         ctx.beginPath();
         ctx.moveTo(puntaXVelocidad, puntaYVelocidad);
         ctx.lineTo(puntaXVelocidad - tamPunta * Math.cos(anguloVelocidad - 0.6), puntaYVelocidad - tamPunta * Math.sin(anguloVelocidad - 0.6));
@@ -716,8 +735,11 @@ function manageRightClick(e) {
 
 function actualizarDebugPanel() {
 
+    //Inicializamos una variable de texto vacía que actuará como contenedor temporal. Aquí iremos acumulando toda la información de las bolas antes de enviarla de golpe al HTML.
     var texto = "";
 
+    //Recorremos el array de bolas y utilizamos "template literals" (comillas invertidas) para generar el HTML dinámicamente.
+    //Extraemos y redondeamos (con Math.round para evitar decimales infinitos) la posición, la velocidad y el estado lógico de cada bola.
     for (var i = 0; i < ballsArr.length; i++) {
         texto +=
         `Bola ${i + 1} <br>
@@ -728,6 +750,8 @@ function actualizarDebugPanel() {
         ¿Lanzada?: ${ballsArr[i].lanzada} <br>`
     }
 
+    //Interacción directa con el DOM: buscamos el panel de debug en nuestra estructura HTML
+    //y le inyectamos todo el bloque de texto generado para actualizar los datos en pantalla en tiempo real.
     document.getElementById("debugPanel").innerHTML = texto;
 }
 
