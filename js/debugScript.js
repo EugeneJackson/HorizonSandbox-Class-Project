@@ -276,19 +276,59 @@ function dibujarLineaDireccionLanzamiento() {
 
 
 function dibujarGrid() {
-    for(var i = 0; i < c.width; i += 50) {
+    
+    // Dibujamos 400 píxeles por fuera de la pantalla en todas las direcciones
+    var margen = 400; 
 
+    for(var i = -margen; i < c.width + margen; i += 50) {
         ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, c.height);
+        
+        for(var y = -margen; y <= c.height + margen; y += 10) {
+            var xDeformado = i;
+            var yDeformado = y;
+
+            for(var j = 0; j < massiveObjArr.length; j++) {
+                var dx = massiveObjArr[j].massivePosX - xDeformado;
+                var dy = massiveObjArr[j].massivePosY - yDeformado;
+                var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+                var factor = massiveObjArr[j].radioVisualAgujeroNegro * 40;
+                var deformacion = Math.min(factor / d, 40);
+
+                xDeformado += (dx / d) * deformacion;
+                yDeformado += (dy / d) * deformacion;
+            }
+
+            ctx.lineTo(xDeformado, yDeformado);
+        }
+
         ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
         ctx.stroke();
     }
 
-    for(var i = 0; i < c.height; i += 50) {
+    for(var i = -margen; i < c.height + margen; i += 50) {
         ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(c.width, i);
+        
+        for(var x = -margen; x <= c.width + margen; x += 10) {
+            
+            var xDeformado = x;
+            var yDeformado = i; 
+
+            for(var j = 0; j < massiveObjArr.length; j++) {
+                var dx = massiveObjArr[j].massivePosX - xDeformado;
+                var dy = massiveObjArr[j].massivePosY - yDeformado;
+                var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+                var factor = massiveObjArr[j].radioVisualAgujeroNegro * 40;
+                var deformacion = Math.min(factor / d, 40);
+
+                xDeformado += (dx / d) * deformacion;
+                yDeformado += (dy / d) * deformacion;
+            }
+
+            ctx.lineTo(xDeformado, yDeformado);
+        }
+
         ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
         ctx.stroke();
     }
