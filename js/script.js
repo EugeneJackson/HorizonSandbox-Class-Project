@@ -357,7 +357,7 @@ function dibujarGrid() {
                 var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
                 var factor = massiveObjArr[j].radioVisualAgujeroNegro * 40;
-                var deformacion = Math.min(factor / d, 40);
+                var deformacion = Math.min(factor / d, 40, d * 0.95);
 
                 xDeformado += (dx / d) * deformacion;
                 yDeformado += (dy / d) * deformacion;
@@ -384,7 +384,7 @@ function dibujarGrid() {
                 var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
                 var factor = massiveObjArr[j].radioVisualAgujeroNegro * 40;
-                var deformacion = Math.min(factor / d, 40);
+                var deformacion = Math.min(factor / d, 40, d * 0.95);
 
                 xDeformado += (dx / d) * deformacion;
                 yDeformado += (dy / d) * deformacion;

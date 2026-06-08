@@ -147,8 +147,22 @@ document.getElementById("sliderRadioBall").addEventListener('input', function (e
     document.getElementById("valorRadioBall").textContent = e.target.value;
 });
 
+//Lambda pora coger el valor del slider del radio visual del agujero negro y actualizar el disco de acreción.
 document.getElementById("visualRadioMassive").addEventListener('input', function (e) {
-    selectedObject.radioVisualAgujeroNegro = e.target.value;
+    selectedObject.radioVisualAgujeroNegro = Number(e.target.value);
+    selectedObject.arrayDiscoAcrecion = [];
+
+    for(var i = 0; i < 500; i++) {
+
+            var distancia = selectedObject.radioVisualAgujeroNegro + Math.random() * selectedObject.radioVisualAgujeroNegro;
+
+            selectedObject.arrayDiscoAcrecion.push(new ParticulaDiscoAcrecion(Math.random() * (2 * Math.PI),
+                                                                    selectedObject.radioVisualAgujeroNegro + Math.random() * selectedObject.radioVisualAgujeroNegro,
+                                                                    1 / distancia * 60,
+                                                                    Math.random() * 2 + 1,
+                                                                    "orange"));
+        }
+
     document.getElementById("valueRadioMassive").textContent = e.target.value;
 });
 
@@ -293,7 +307,7 @@ function dibujarGrid() {
                 var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
                 var factor = massiveObjArr[j].radioVisualAgujeroNegro * 40;
-                var deformacion = Math.min(factor / d, 40);
+                var deformacion = Math.min(factor / d, 40, d * 0.95);
 
                 xDeformado += (dx / d) * deformacion;
                 yDeformado += (dy / d) * deformacion;
@@ -320,7 +334,7 @@ function dibujarGrid() {
                 var d = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
                 var factor = massiveObjArr[j].radioVisualAgujeroNegro * 40;
-                var deformacion = Math.min(factor / d, 40);
+                var deformacion = Math.min(factor / d, 40, d * 0.95);
 
                 xDeformado += (dx / d) * deformacion;
                 yDeformado += (dy / d) * deformacion;
@@ -410,13 +424,16 @@ function dibujarEstela() {
 
 function dibujarDiscoDeAcrecionDetras() {
 
+    //Se aplica a cada agujero negro.
     for(var i = 0; i < massiveObjArr.length; i++) {
 
+        //Se recorre cada array de cada agujero negro del disco de acreción y se hace la logica.
         for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
 
             var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
             var t = (distanciaParticulasDiscoAcrecion - massiveObjArr[i].radioVisualAgujeroNegro) / massiveObjArr[i].radioVisualAgujeroNegro;
 
+            //Posición en X e Y del disco de acreción.
             var accretionDiskX = massiveObjArr[i].massivePosX + distanciaParticulasDiscoAcrecion * Math.cos(massiveObjArr[i].arrayDiscoAcrecion[j].angulo);
             var accretionDiskY = massiveObjArr[i].massivePosY + (distanciaParticulasDiscoAcrecion * Math.sin(massiveObjArr[i].arrayDiscoAcrecion[j].angulo) * 0.4);
 
@@ -433,8 +450,10 @@ function dibujarDiscoDeAcrecionDetras() {
 
 function dibujarDiscoDeAcrecionDelante() {
 
+    //Se aplica a cada agujero negro.
     for(var i = 0; i < massiveObjArr.length; i++) {
 
+        //Se recorre cada array de cada agujero negro del disco de acreción y se hace la logica.
         for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
 
             var distanciaParticulasDiscoAcrecion = massiveObjArr[i].arrayDiscoAcrecion[j].distancia;
@@ -597,10 +616,15 @@ function actualizarFisica(dt) {
 function actualizarDiscoAcrecion(dt) {
     for(var i = 0; i < massiveObjArr.length; i++) {
         for(var j = 0; j < massiveObjArr[i].arrayDiscoAcrecion.length; j++) {
+
+            //Tercera ley de Kepler: angulo += suma el angulo actual | velocidadAngular * dt la velocidad angular multiplicada por el delta time. Cada frame
+            //la particula avanza un poco en su órbita, cuanto más lejos del horizonte de eventos, más lento va a ir, igual que los planetas orbitando sobre el Sol, los planetas
+            //más lejanos tardan mas en dar una vuelta al sol.
             massiveObjArr[i].arrayDiscoAcrecion[j].angulo += massiveObjArr[i].arrayDiscoAcrecion[j].velocidadAngular * dt;
         }
     }
 }
+
 
 /////////////////////////////////
 //MANEJO DE EVENTOS
